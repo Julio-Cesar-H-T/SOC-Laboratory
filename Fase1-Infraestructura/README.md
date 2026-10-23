@@ -287,7 +287,7 @@ cd .\Sysmon
 # En PowerShell como Administrador
 Invoke-WebRequest -Uri "https://packages.wazuh.com/4.x/windows/wazuh-agent-4.7.0-1.msi" -OutFile wazuh-agent.msi
 
-msiexec.exe /i wazuh-agent.msi /q WAZUH_MANAGER="192.168.200.10" WAZUH_AGENT_NAME="Windows-Endpoint"
+msiexec.exe /i wazuh-agent.msi /q WAZUH_MANAGER="192.168.200.96" WAZUH_AGENT_NAME="Windows-Endpoint"
 
 NET START WazuhSvc
 ```
