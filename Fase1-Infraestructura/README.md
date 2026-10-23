@@ -464,5 +464,3 @@ event.code: "10" and winlog.event_data.TargetImage: *lsass*
 
 # PowerShell Script Block Logging (Event ID 4104)
 event.code: "4104"
-```
-```
