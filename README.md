@@ -77,7 +77,7 @@ El endpoint Windows genera eventos detallados del sistema operativo y del kernel
 - [x] Validación de ingesta de datos y resolución de problemas técnicos en pipelines.
 - [x] Pruebas de emulación iniciales con **Atomic Red Team** y **winPEAS**.
 
-📂 *Ver detalles técnicos en [`fase1-infraestructura/SOC-Lab-Fase1-Infraestructura.md`](Fase1-Infraestructura/soc_lab_fase1.md).*
+📂 *Ver detalles técnicos en [`Infraestructura del proyecto`](Fase1-Infraestructura/soc_lab_fase1.md).*
 
 ---
 
