@@ -88,13 +88,9 @@ El endpoint Windows genera eventos detallados del sistema operativo y del kernel
 
 ---
 
-### 🛡️ Fase 3: Emulación de Ataques y Artefactos
+### 🛡️ Fase 3: Emulación de Ataques y Artefactos *(En progreso)*
 - [ ] Documentación de detecciones paso a paso para técnicas específicas del MITRE ATT&CK:
-  - **T1082** — System Information Discovery (`winPEAS`)
-  - **T1021.004** — Remote Services: SSH (`plink.exe`)
-  - **T1547.001** — Persistence: Registry Run Keys
-  - **T1003.001** — OS Credential Dumping: LSASS
-- [ ] Almacenamiento de JSONs de eventos crudos y capturas de pantalla de análisis forense en `detections/`.
+
 
 ---
 
