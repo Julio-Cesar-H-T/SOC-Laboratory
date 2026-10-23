@@ -1,7 +1,7 @@
 # SOC Home Lab - Fase 1: Infraestructura y Pipeline de Telemetria
 
-**Autor:** Vejetto896  
-**Institucion:** ITLA (Instituto Tecnologico de Las Americas), Republica Dominicana  
+**Autor:** Julio Cesar Hernandez Tibrey / Vejetto89  
+**Institucion:** ITLA (Instituto Tecnologico de Las Americas)  
 **Fecha:** Octubre 2026  
 **Estado:** Completado y validado
 
@@ -22,7 +22,6 @@
 8. [Validacion del pipeline](#8-validacion-del-pipeline)
 9. [Problemas encontrados y soluciones](#9-problemas-encontrados-y-soluciones)
 10. [Queries KQL validadas](#10-queries-kql-validadas)
-11. [Siguientes pasos](#11-siguientes-pasos)
 
 ---
 
@@ -44,7 +43,7 @@ Montar un entorno SOC funcional en casa para:
 Fedora 43 (Host - HP Victus 16)
 │
 ├── VM1: Rocky Linux 8          →  Wazuh Server + Indexer + Dashboard
-│         192.168.200.10               (OpenSearch + Wazuh Dashboard)
+│         192.168.200.96               (OpenSearch + Wazuh Dashboard)
 │
 ├── VM2: Ubuntu Server 22.04    →  Elastic Stack
 │         192.168.200.87               (Elasticsearch 8.19 + Kibana)
@@ -53,7 +52,7 @@ Fedora 43 (Host - HP Victus 16)
 │         192.168.200.154              (Sysmon + Wazuh Agent + Winlogbeat)
 │
 └── VM4: Kali Linux             →  Atacante (bajo demanda)
-          192.168.200.30
+          192.168.200.82
 ```
 
 ### Flujo de telemetria
@@ -63,7 +62,7 @@ Windows 10 Endpoint
 │
 ├── Sysmon (kernel-level events)
 │     │
-│     ├──→ Wazuh Agent ──→ Wazuh Manager (192.168.200.10)
+│     ├──→ Wazuh Agent ──→ Wazuh Manager (192.168.200.96)
 │     │                        └── OpenSearch + Wazuh Dashboard
 │     │
 │     └──→ Winlogbeat ──→ Elasticsearch (192.168.200.87:9200)
@@ -98,10 +97,6 @@ El mismo endpoint envia telemetria **simultaneamente** a ambos SIEMs, permitiend
 | Ubuntu Server (Elastic) | 3 GB | 2 | Sesiones Kibana/KQL |
 | Windows 10 (Endpoint) | 4 GB | 2 | Siempre en sesiones SOC |
 | Kali Linux (Atacante) | 2 GB | 2 | Solo durante ataques |
-| **Maximo activo (3 VMs)** | **10 GB** | **6** | Nunca Wazuh + Elastic juntos |
-| **Reservado para host** | **6 GB** | - | Siempre |
-
-> **Regla de oro:** No levantar Wazuh y Elastic simultaneamente. Usar en sesiones separadas segun lo que se practique ese dia.
 
 ---
 
@@ -158,9 +153,9 @@ curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh
 curl -sO https://packages.wazuh.com/4.7/config.yml
 
 # Ajustar IPs en config.yml
-sed -i 's/<indexer-node-ip>/192.168.200.10/g' config.yml
-sed -i 's/<wazuh-manager-ip>/192.168.200.10/g' config.yml
-sed -i 's/<dashboard-node-ip>/192.168.200.10/g' config.yml
+sed -i 's/<indexer-node-ip>/192.168.200.96/g' config.yml
+sed -i 's/<wazuh-manager-ip>/192.168.200.96/g' config.yml
+sed -i 's/<dashboard-node-ip>/192.168.200.96/g' config.yml
 
 bash wazuh-install.sh -a
 # Guardar las credenciales que muestra al final
@@ -179,7 +174,7 @@ systemctl restart opensearch wazuh-manager wazuh-dashboard
 
 ### Acceso
 
-- **URL:** `https://192.168.200.10`
+- **URL:** `https://192.168.200.96`
 - **Usuario:** `admin`
 - **Password:** [generada durante instalacion]
 
@@ -532,54 +527,3 @@ winlog.event_id: "4104"
 # Acceso a LSASS (credential dumping - Event ID 10)
 winlog.event_id: "10" and winlog.event_data.TargetImage: *lsass*
 ```
-
----
-
-## 11. Siguientes pasos
-
-### Fase 2 - Reglas de deteccion personalizadas
-
-- [ ] Escribir reglas XML en Wazuh (`/var/ossec/etc/rules/local_rules.xml`) para winPEAS, plink.exe y cmd chaining
-- [ ] Crear alertas en Elastic Security (Custom Query rules) para los mismos TTPs
-- [ ] Documentar cada regla como artefacto independiente en `detections/`
-
-### Fase 3 - Ejercicios ATT&CK sistematicos
-
-Ejecutar los siguientes Atomic Red Team tests en orden de kill chain:
-
-| Tecnica | Test | Sysmon Event ID clave |
-|---|---|---|
-| T1547.001 Registry Run Key | `Invoke-AtomicTest T1547.001` | 13 |
-| T1003.001 LSASS Memory | `Invoke-AtomicTest T1003.001` | 10 |
-| T1059.001 PowerShell | `Invoke-AtomicTest T1059.001` | 1 |
-| T1046 Network Scan | `Invoke-AtomicTest T1046` | 3 |
-| T1041 Exfiltration | `Invoke-AtomicTest T1041` | 3 |
-
-### Fase 4 - Portfolio en GitHub
-
-Estructura de artefactos por deteccion:
-
-```text
-detections/
-└── T1082-system-discovery-winpeas/
-    ├── README.md         ← descripcion, contexto ATT&CK, respuesta recomendada
-    ├── raw_event.json    ← evento Sysmon capturado desde Kibana
-    ├── wazuh_rule.xml    ← regla XML personalizada
-    ├── kibana_kql.md     ← queries KQL usadas
-    └── screenshot.png    ← captura del evento en Kibana Discover
-```
-
----
-
-## Referencias
-
-- [Wazuh Documentation](https://documentation.wazuh.com)
-- [Elastic Winlogbeat Reference](https://www.elastic.co/guide/en/beats/winlogbeat/current/index.html)
-- [SwiftOnSecurity Sysmon Config](https://github.com/SwiftOnSecurity/sysmon-config)
-- [Atomic Red Team](https://github.com/redcanaryco/invoke-atomicredteam)
-- [MITRE ATT&CK Framework](https://attack.mitre.org)
-- [Sysinternals Sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon)
-
----
-
-*Documentacion generada como parte del portfolio tecnico de Vejetto896 - SOC Home Lab Project*
