@@ -1,13 +1,13 @@
-# SOC Home Lab - Fase 1: Infraestructura y Pipeline de Telemetria
+# SOC Home Lab - Fase 1: Infraestructura y Pipeline de Telemetría
 
 **Autor:** Julio Cesar Hernandez Tibrey / Vejetto89  
-**Institucion:** ITLA (Instituto Tecnologico de Las Americas)  
+**Institución:** ITLA (Instituto Tecnológico de Las Américas)  
 **Fecha:** Octubre 2026  
 **Estado:** Completado y validado
 
 ---
 
-## Indice
+## Índice
 
 1. [Objetivo](#1-objetivo)
 2. [Arquitectura](#2-arquitectura)
@@ -18,10 +18,10 @@
 7. [VM3 - Windows 10 Pro (Endpoint)](#7-vm3---windows-10-pro-endpoint)
    - [7.1 Sysmon](#71-sysmon)
    - [7.2 Wazuh Agent](#72-wazuh-agent)
-   - [7.3 Winlogbeat](#73-winlogbeat)
-8. [Validacion del pipeline](#8-validacion-del-pipeline)
+   - [7.3 Winlogbeat (ECS & TLS)](#73-winlogbeat-ecs--tls)
+8. [Validación del pipeline y Baseline](#8-validación-del-pipeline-y-baseline)
 9. [Problemas encontrados y soluciones](#9-problemas-encontrados-y-soluciones)
-10. [Queries KQL validadas](#10-queries-kql-validadas)
+10. [Queries KQL validadas (Estándar ECS)](#10-queries-kql-validadas-estándar-ecs)
 
 ---
 
@@ -29,10 +29,10 @@
 
 Montar un entorno SOC funcional en casa para:
 
-- Familiarizarse con SIEMs reales (Wazuh y Elastic Stack)
-- Simular ciclos de ataque completos con Atomic Red Team
-- Detectar, analizar y documentar TTPs del framework MITRE ATT&CK
-- Construir un portfolio tecnico documentado en GitHub
+- Familiarizarse con SIEMs reales (Wazuh y Elastic Stack).
+- Simular ciclos de ataque completos con Atomic Red Team.
+- Detectar, analizar y documentar TTPs del framework MITRE ATT&CK.
+- Construir un portfolio técnico documentado en GitHub.
 
 ---
 
@@ -54,7 +54,7 @@ Fedora 43 (Host - HP Victus 16)
           192.168.200.82
 ```
 
-### Flujo de telemetria
+### Flujo de telemetría
 
 ```text
 Windows 10 Endpoint
@@ -72,13 +72,13 @@ Windows 10 Endpoint
       └──→ Winlogbeat
 ```
 
-El mismo endpoint envia telemetria **simultaneamente** a ambos SIEMs, permitiendo comparar detecciones y practicar tanto con Wazuh (reglas XML) como con Elastic Security (KQL).
+El mismo endpoint envía telemetría **simultáneamente** a ambos SIEMs, permitiendo comparar detecciones y practicar tanto con Wazuh (reglas XML) como con Elastic Security (KQL y EQL).
 
 ---
 
 ## 3. Especificaciones del host
 
-| Componente | Especificacion |
+| Componente | Especificación |
 |---|---|
 | Modelo | HP Victus 16 |
 | CPU | AMD Ryzen 7 7840HS (8 cores / 16 threads) |
@@ -88,9 +88,9 @@ El mismo endpoint envia telemetria **simultaneamente** a ambos SIEMs, permitiend
 | OS Host | Dual boot: Windows 11 (500 GB) / Fedora 43 (500 GB) |
 | Hipervisor | KVM / QEMU (`libvirt` + `virt-manager`) |
 
-### Distribucion de RAM
+### Distribución de RAM
 
-| VM | RAM | vCPUs | Cuando encenderla |
+| VM | RAM | vCPUs | Cuándo encenderla |
 |---|---|---|---|
 | Rocky Linux 8 (Wazuh) | 3 GB | 2 | Sesiones Wazuh |
 | Ubuntu Server (Elastic) | 3 GB | 2 | Sesiones Kibana/KQL |
@@ -123,13 +123,13 @@ virsh net-start soc-lab
 virsh net-autostart soc-lab
 ```
 
-> **Nota:** La red original planificada era `192.168.100.0/24`, pero entro en conflicto con la red LAN existente del host. Se migro a `192.168.200.0/24` sin otros cambios.
+> **Nota:** La red original planificada era `192.168.100.0/24`, pero entró en conflicto con la red LAN existente del host. Se migró a `192.168.200.0/24` sin otros cambios.
 
 ---
 
 ## 5. VM1 - Rocky Linux 8 (Wazuh)
 
-### Creacion de la VM
+### Creación de la VM
 
 ```bash
 virt-install \
@@ -144,7 +144,7 @@ virt-install \
   --channel unix,target_type=virtio,name=org.qemu.guest_agent.0
 ```
 
-### Instalacion de Wazuh All-in-One
+### Instalación de Wazuh All-in-One
 
 ```bash
 # Como root en Rocky Linux
@@ -160,7 +160,7 @@ bash wazuh-install.sh -a
 # Guardar las credenciales que muestra al final
 ```
 
-### Optimizacion de RAM - limitar Heap de OpenSearch
+### Optimización de RAM - limitar Heap de OpenSearch
 
 Sin este ajuste, OpenSearch puede consumir toda la RAM de la VM y ser matado por el OOM Killer.
 
@@ -175,13 +175,13 @@ systemctl restart opensearch wazuh-manager wazuh-dashboard
 
 - **URL:** `https://192.168.200.96`
 - **Usuario:** `admin`
-- **Password:** [generada durante instalacion]
+- **Password:** [generada durante instalación]
 
 ---
 
 ## 6. VM2 - Ubuntu Server 22.04 (Elastic Stack)
 
-### Creacion de la VM
+### Creación de la VM
 
 ```bash
 virt-install \
@@ -196,7 +196,7 @@ virt-install \
   --channel unix,target_type=virtio,name=org.qemu.guest_agent.0
 ```
 
-### Instalacion de Elasticsearch y Kibana
+### Instalación de Elasticsearch y Kibana
 
 ```bash
 # Importar clave GPG y repositorio
@@ -206,7 +206,7 @@ echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" \
 
 apt update && apt install -y elasticsearch kibana
 
-# Limitar Heap de Elasticsearch (critico con 3 GB de RAM)
+# Limitar Heap de Elasticsearch (crítico con 3 GB de RAM)
 echo "-Xms1g" > /etc/elasticsearch/jvm.options.d/heap.options
 echo "-Xmx1g" >> /etc/elasticsearch/jvm.options.d/heap.options
 
@@ -220,13 +220,13 @@ sed -i 's/#server.host: "localhost"/server.host: "0.0.0.0"/' /etc/kibana/kibana.
 systemctl restart kibana
 ```
 
-### Version en produccion
+### Versiones en producción (Actualizado)
 
-| Componente | Version |
+| Componente | Versión |
 |---|---|
 | Elasticsearch | 8.19.23 |
-| Kibana | 8.x |
-| Winlogbeat | 8.10.0 |
+| Kibana | 8.19.x |
+| Winlogbeat | 8.19.0 |
 
 ### Acceso
 
@@ -240,48 +240,48 @@ systemctl restart kibana
 - **IP:** `192.168.200.154`  
 - **OS:** Windows 10 Pro Build 19045.2965
 
-Esta VM es el corazon del laboratorio. Envia telemetria simultaneamente a Wazuh y a Elastic Stack, permitiendo comparar la misma deteccion en ambas interfaces.
+Esta VM es el corazón del laboratorio. Envía telemetría simultáneamente a Wazuh y a Elastic Stack, permitiendo comparar la misma detección en ambas interfaces.
 
 ---
 
 ### 7.1 Sysmon
 
-Sysmon (System Monitor) es el componente mas critico del endpoint. Anade visibilidad de nivel EDR sobre los logs nativos de Windows: relaciones proceso padre/hijo con hashes, conexiones de red por proceso, acceso a LSASS, modificaciones de registro, DNS queries, y mas.
+Sysmon (System Monitor) añade visibilidad de nivel EDR sobre los logs nativos de Windows: relaciones proceso padre/hijo con hashes, conexiones de red por proceso, acceso a LSASS, modificaciones de registro, DNS queries, y más.
 
-#### Instalacion
+#### Instalación
 
 ```powershell
 # Descargar Sysmon desde Sysinternals
 Invoke-WebRequest -Uri "https://download.sysinternals.com/files/Sysmon.zip" -OutFile "Sysmon.zip"
 Expand-Archive Sysmon.zip -DestinationPath .\Sysmon
 
-# Descargar configuracion de SwiftOnSecurity (estandar de la industria)
+# Descargar configuración de SwiftOnSecurity (estándar de la industria)
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml" -OutFile "sysmonconfig.xml"
 
-# Instalar con la configuracion
+# Instalar con la configuración
 cd .\Sysmon
 .\Sysmon64.exe -i ..\sysmonconfig.xml -accepteula
 ```
 
 #### Event IDs clave para SOC
 
-| Event ID | Descripcion | Detecciones clave |
+| Event ID | Descripción | Detecciones clave |
 |---|---|---|
-| 1 | Process Creation | Hashes, linea de comandos completa, proceso padre |
+| 1 | Process Creation | Hashes, línea de comandos, proceso padre |
 | 3 | Network Connection | Conexiones por proceso, IP destino, puerto |
 | 7 | Image Loaded | DLLs cargadas - detecta DLL hijacking |
-| 8 | CreateRemoteThread | Inyeccion de codigo entre procesos |
+| 8 | CreateRemoteThread | Inyección de código entre procesos |
 | 10 | Process Access | Acceso a LSASS - credential dumping |
-| 11 | FileCreate | Creacion de archivos con hashes |
+| 11 | FileCreate | Creación de archivos con hashes |
 | 13 | Registry Value Set | Modificaciones de registro (persistencia) |
 | 22 | DNS Query | Resoluciones DNS por proceso |
-| 23 | FileDelete | Eliminacion de archivos (anti-forense) |
+| 23 | FileDelete | Eliminación de archivos (anti-forense) |
 
 ---
 
 ### 7.2 Wazuh Agent
 
-#### Instalacion
+#### Instalación
 
 ```powershell
 # En PowerShell como Administrador
@@ -292,9 +292,9 @@ msiexec.exe /i wazuh-agent.msi /q WAZUH_MANAGER="192.168.200.96" WAZUH_AGENT_NAM
 NET START WazuhSvc
 ```
 
-#### Configuracion para ingestar Sysmon
+#### Configuración para ingestar Sysmon
 
-Editar `C:\Program Files (x86)\ossec-agent\ossec.conf` y anadir dentro de `<ossec_config>`:
+Editar `C:\Program Files (x86)\ossec-agent\ossec.conf` y añadir dentro de `<ossec_config>`:
 
 ```xml
 <localfile>
@@ -312,40 +312,42 @@ Editar `C:\Program Files (x86)\ossec-agent\ossec.conf` y anadir dentro de `<osse
 Restart-Service WazuhSvc
 ```
 
-> **Problema encontrado:** Errores de sintaxis XML en `ossec.conf` impedian que el agente iniciara. Causa: etiquetas mal cerradas al editar manualmente. Solucion: validar el XML antes de reiniciar con un editor que resalte errores de sintaxis (VS Code, Notepad++).
-
 ---
 
-### 7.3 Winlogbeat
+### 7.3 Winlogbeat (ECS & TLS)
 
-Winlogbeat es el agente oficial de Elastic para logs de Windows. Envia eventos directamente a Elasticsearch bajo el estandar ECS (Elastic Common Schema), lo que permite usar KQL en Kibana.
+Winlogbeat envía eventos a Elasticsearch bajo el estándar **ECS (Elastic Common Schema)**. Para garantizar la seguridad y el correcto procesamiento de los datos, se implementó la validación TLS mutua y el pipeline de ingesta de Elastic.
 
-#### Instalacion
+#### 1. Instalación (v8.19.0)
 
 ```powershell
-# Descargar Winlogbeat 8.10.0
-Invoke-WebRequest -Uri "https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.10.0-windows-x86_64.zip" -OutFile winlogbeat.zip
-Expand-Archive winlogbeat.zip -DestinationPath "C:\Program Files\Winlogbeat"
-
-cd "C:\Program Files\Winlogbeat\winlogbeat-8.10.0-windows-x86_64"
+# Descargar Winlogbeat 8.19.0
+Invoke-WebRequest -Uri "https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.19.0-windows-x86_64.zip" -OutFile "$env:TEMP\wb819.zip"
+Expand-Archive "$env:TEMP\wb819.zip" -DestinationPath "C:\Program Files\Winlogbeat"
+cd "C:\Program Files\Winlogbeat\winlogbeat-8.19.0-windows-x86_64"
 ```
 
-#### Configuracion (`winlogbeat.yml`)
+#### 2. Configurar TLS (Certificado CA)
+
+Para que Winlogbeat confíe en la CA autofirmada de Elasticsearch, se descarga el certificado `http_ca.crt` desde la VM de Ubuntu y se guarda en la carpeta de instalación de Winlogbeat.
+
+```powershell
+# (En la VM de Ubuntu: sudo cp /etc/elasticsearch/certs/http_ca.crt /tmp/ && cd /tmp && sudo python3 -m http.server 8080)
+Invoke-WebRequest -Uri "http://192.168.200.87:8080/http_ca.crt" -OutFile "C:\Program Files\Winlogbeat\winlogbeat-8.19.0-windows-x86_64\http_ca.crt"
+```
+
+#### 3. Configuración (`winlogbeat.yml`)
 
 ```yaml
 winlogbeat.event_logs:
   - name: Application
     ignore_older: 72h
-
   - name: System
     ignore_older: 72h
-
   - name: Security
     ignore_older: 72h
-
   - name: Microsoft-Windows-Sysmon/Operational
     ignore_older: 72h
-
   - name: Microsoft-Windows-PowerShell/Operational
     event_id: 4103, 4104, 4105, 4106
     ignore_older: 72h
@@ -357,172 +359,110 @@ output.elasticsearch:
   hosts: ["https://192.168.200.87:9200"]
   username: "elastic"
   password: "TU_PASSWORD_AQUI"
-  ssl.verification_mode: "none"
+  pipeline: "winlogbeat-%{[agent.version]}-routing"
+  ssl:
+    certificate_authorities: ["C:\\Program Files\\Winlogbeat\\winlogbeat-8.19.0-windows-x86_64\\http_ca.crt"]
 
 processors:
   - add_host_metadata: ~
 ```
 
-#### Instalacion del servicio y arranque
+#### 4. Inicialización del Pipeline y Arranque
+
+Es **crítico** ejecutar `setup` primero para que Elasticsearch cree el pipeline de ingesta (que traduce los logs crudos a ECS).
 
 ```powershell
 # Instalar servicio
 .\install-service-winlogbeat.ps1
 
-# Validar configuracion ANTES de arrancar
-.\winlogbeat.exe test config -e
+# 1. Crear pipelines en Elasticsearch
+.\winlogbeat.exe setup -e
 
-# Validar conectividad con Elasticsearch
-.\winlogbeat.exe test output -e
-
-# Arrancar
+# 2. Arrancar el servicio
 Start-Service winlogbeat
 Get-Service winlogbeat
 ```
 
-#### Ruta de logs del servicio
-
-```text
-C:\ProgramData\winlogbeat\logs\winlogbeat-YYYYMMDD.ndjson
-```
-
-> **Nota:** La carpeta de logs NO es `C:\Program Files\Winlogbeat\...\logs\` sino `C:\ProgramData\winlogbeat\logs\`. El servicio registra `--path.logs` en su configuracion, visible con `sc.exe qc winlogbeat`.
-
 ---
 
-## 8. Validacion del pipeline
+## 8. Validación del pipeline y Baseline
 
-### Confirmacion en logs de Winlogbeat
-
-Senales de funcionamiento correcto en `C:\ProgramData\winlogbeat\logs\winlogbeat-*.ndjson`:
-
+### Confirmación en logs de Winlogbeat
+Los logs ahora se ubican en `C:\ProgramData\winlogbeat\logs\`. Una conexión exitosa y segura se ve así:
 ```json
 {"log.level":"info","message":"Connection to backoff(elasticsearch(https://192.168.200.87:9200)) established"}
-{"libbeat":{"output":{"events":{"acked":2481,"active":0,"batches":51,"total":2481}}}}
 ```
+*(Nota: El mensaje `SSL/TLS verifications disabled` ya no debe aparecer).*
 
-### Comandos de diagnostico
+### Captura de Baseline (Línea Base)
+Para entender el comportamiento normal del endpoint antes de atacar, se ejecutó una agregación en Kibana (Dev Tools) para identificar los procesos más comunes y sus padres:
 
-```powershell
-# Ver estado del servicio
-Get-Service winlogbeat
-
-# Leer log en tiempo real
-Get-Content "C:\ProgramData\winlogbeat\logs\winlogbeat-20261021-3.ndjson" -Wait
-
-# Filtrar solo errores y warnings de todos los logs
-Get-Content "C:\ProgramData\winlogbeat\logs\*.ndjson" |
-  Where-Object { $_ -match '"log.level":"error"' -or $_ -match '"log.level":"warn"' } |
-  Select-Object -Last 20
-
-# Ver ruta exacta registrada por el servicio
-sc.exe qc winlogbeat
+```json
+GET winlogbeat-*/_search
+{
+  "size": 0,
+  "query": { "match": { "event.code": "1" } },
+  "aggs": {
+    "procesos": {
+      "terms": { "field": "process.name", "size": 50 },
+      "aggs": {
+        "padres": { "terms": { "field": "process.parent.name", "size": 5 } }
+      }
+    }
+  }
+}
 ```
-
-### Verificacion en Kibana
-
-1. Ir a `http://192.168.200.87:5601`
-2. **Management -> Stack Management -> Kibana -> Data Views -> Create data view**
-3. Index pattern: `winlogbeat-*` / Timestamp: `@timestamp`
-4. En **Discover**, filtrar con KQL:
-
-```kql
-winlog.channel : "Microsoft-Windows-Sysmon/Operational"
-```
+*Hallazgos:* Procesos como `svchost.exe` y `explorer.exe` dominan la telemetría. Se estableció que `powershell.exe` es lanzado normalmente por `CompatTelRunner.exe` (telemetría de Windows).
 
 ---
 
 ## 9. Problemas encontrados y soluciones
 
 ### Problema 1 - Conflicto de red `192.168.100.0/24`
-
-**Sintoma:** La red NAT `192.168.100.0/24` planificada originalmente entraba en conflicto con la red LAN del router del host.
-
-**Solucion:** Migrar toda la infraestructura a `192.168.200.0/24`. No requirio cambios de arquitectura, solo actualizar las IPs en todos los archivos de configuracion.
-
----
+**Solución:** Migrar toda la infraestructura a `192.168.200.0/24`.
 
 ### Problema 2 - Winlogbeat enviando a `http://` en lugar de `https://`
-
-**Sintoma:** El log mostraba repetidamente: `Failed to connect to backoff(elasticsearch(http://192.168.200.87:9200)): EOF`
-
-**Causa:** Elasticsearch 8.x habilita HTTPS por defecto. El `winlogbeat.yml` original tenia `protocol: "http"` o carecia de la linea `protocol: "https"`.
-
-**Solucion:** Especificar explicitamente el protocolo en el host:
-
-```yaml
-output.elasticsearch:
-  hosts: ["https://192.168.200.87:9200"]
-  ssl.verification_mode: "none"
-```
-
----
+**Solución:** Especificar explícitamente `https://` en el host. Adicionalmente, se reemplazó `ssl.verification_mode: "none"` por la configuración correcta `certificate_authorities` apuntando al `http_ca.crt` de Elastic.
 
 ### Problema 3 - Ruta de logs de Winlogbeat no encontrada
-
-**Sintoma:** `Cannot find path 'C:\Program Files\Winlogbeat\...\logs\winlogbeat'`
-
-**Causa:** Al instalar el servicio con `install-service-winlogbeat.ps1`, Windows registra `--path.logs "C:\ProgramData\winlogbeat\logs"` (una ruta diferente a la carpeta de instalacion).
-
-**Diagnostico:**
-
-```powershell
-sc.exe qc winlogbeat
-```
-
-**Solucion:** Los logs estan siempre en `C:\ProgramData\winlogbeat\logs\`, no en la carpeta de instalacion.
-
----
+**Solución:** Los logs están en `C:\ProgramData\winlogbeat\logs\`, no en la carpeta de instalación. Se diagnostica con `sc.exe qc winlogbeat`.
 
 ### Problema 4 - Pipeline `winlogbeat-routing` no existe
+**Causa:** Se descomentó la línea `pipeline:` sin ejecutar primero `winlogbeat setup`.
+**Solución:** Ejecutar `.\winlogbeat.exe setup -e` antes de arrancar el servicio. Esto crea el pipeline `winlogbeat-8.19.0-routing` en Elasticsearch y permite el mapeo ECS.
 
-**Sintoma:** Winlogbeat no enviaba eventos a pesar de que el servicio reportaba `Running`.
+### Problema 5 - Errores de sintaxis XML en `ossec.conf`
+**Solución:** Editar con un editor que valide XML en tiempo real (VS Code) y verificar cierres.
 
-**Causa:** El `winlogbeat.yml` original incluia `pipeline: "winlogbeat-%{[agent.version]}-routing"`. Este pipeline de ingest se crea automaticamente cuando se corre `winlogbeat setup`, comando que no se ejecuto.
-
-**Solucion:** Comentar o eliminar la linea `pipeline:` del `winlogbeat.yml` para que los eventos se indexen directamente.
-
----
-
-### Problema 5 - Errores de sintaxis XML en `ossec.conf` de Wazuh Agent
-
-**Sintoma:** El servicio `WazuhSvc` no iniciaba despues de editar `ossec.conf`.
-
-**Causa:** Edicion manual del XML con etiquetas mal cerradas o caracteres invalidos.
-
-**Solucion:** Editar con un editor que valide XML en tiempo real (VS Code con extension XML, o Notepad++). Verificar que cada `<localfile>` tenga su cierre `</localfile>` correcto.
+### Problema 6 - Mismatch de versiones (8.10 vs 8.19)
+**Solución:** Actualizar Winlogbeat a la versión 8.19.0 para emparejar con Elasticsearch 8.19.23 y evitar problemas de compatibilidad de mapeos y pipelines.
 
 ---
 
-## 10. Queries KQL validadas
+## 10. Queries KQL validadas (Estándar ECS)
 
-Queries probadas en Kibana (Data View: `winlogbeat-*`) que confirmaron recepcion de telemetria real:
+Gracias al pipeline de Winlogbeat, ahora todas las búsquedas se realizan sobre el esquema ECS (campos como `process.name` en lugar de `winlog.event_data.Image`). Esto hace las queries portables y profesionales.
 
 ```kql
-# Ver todos los eventos de Sysmon
-winlog.channel : "Microsoft-Windows-Sysmon/Operational"
+# Ver todos los eventos de creación de procesos (Sysmon EID 1)
+event.code: "1"
 
-# Process Creation (Event ID 1) - base de la mayoria de detecciones
-winlog.event_id : "1"
+# Filtrar por nombre de proceso
+process.name: "powershell.exe"
 
-# cmd.exe spawneado por cmd.exe (shell chaining sospechoso)
-winlog.event_id: "1" and winlog.event_data.Image: *cmd.exe and winlog.event_data.ParentImage: *cmd.exe
+# Ver la línea de comandos completa (ej. detectar Base64)
+process.command_line: *EncodedCommand*
 
-# Equivalente en formato ECS estandar
-event.code: "1" and process.name: "cmd.exe" and process.parent.name: "cmd.exe"
+# Relaciones padre/hijo (ej. cmd lanzado por explorer)
+process.name: "cmd.exe" and process.parent.name: "explorer.exe"
 
-# Actividad de plink.exe (usado por Atomic Red Team T1021.004)
-winlog.event_data.Image: *plink.exe
+# Ejecución de herramientas de descubrimiento (netsh)
+process.name: "netsh.exe"
 
-# winPEAS execution (T1082 / T1069)
-winlog.event_data.Image: *winpeas*
-
-# Procesos con integridad High (elevados)
-winlog.event_data.IntegrityLevel: "High"
+# Acceso a LSASS (Sysmon EID 10 - Credential Dumping)
+event.code: "10" and winlog.event_data.TargetImage: *lsass*
 
 # PowerShell Script Block Logging (Event ID 4104)
-winlog.event_id: "4104"
-
-# Acceso a LSASS (credential dumping - Event ID 10)
-winlog.event_id: "10" and winlog.event_data.TargetImage: *lsass*
+event.code: "4104"
+```
 ```
