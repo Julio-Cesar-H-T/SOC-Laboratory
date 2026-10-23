@@ -29,11 +29,10 @@
 
 Montar un entorno SOC funcional en casa para:
 
-- Familiarizarse con SIEMs reales (Wazuh y Elastic Stack) antes de entrevistas tecnicas
+- Familiarizarse con SIEMs reales (Wazuh y Elastic Stack)
 - Simular ciclos de ataque completos con Atomic Red Team
 - Detectar, analizar y documentar TTPs del framework MITRE ATT&CK
 - Construir un portfolio tecnico documentado en GitHub
-- Prepararse para el rol de SOC Analyst Tier 1 -> Threat Hunter
 
 ---
 
