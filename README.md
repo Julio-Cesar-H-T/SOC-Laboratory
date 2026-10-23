@@ -110,6 +110,6 @@ El endpoint Windows genera eventos detallados del sistema operativo y del kernel
 
 ## 👤 Autor
 
-* **Julio Cesar Hernandez Tibre / Vejetto89**
+* **Julio Cesar Hernandez Tibrey / Vejetto89**
 * **Institución:** Instituto Tecnológico de Las Américas (ITLA)
 * **Perfil:** Estudiante de Ciberseguridad / Aspirante a SOC Analyst & Threat Hunter
