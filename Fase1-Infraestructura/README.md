@@ -401,17 +401,26 @@ Para entender el comportamiento normal del endpoint antes de atacar, se ejecutó
 GET winlogbeat-*/_search
 {
   "size": 0,
-  "query": { "match": { "event.code": "1" } },
-  "aggs": {
-    "procesos": {
-      "terms": { "field": "process.name", "size": 50 },
-      "aggs": {
-        "padres": { "terms": { "field": "process.parent.name", "size": 5 } }
-      }
+  "query": {
+    "bool": {
+      "filter": [
+        { "term":  { "event.code": "1" } },
+        { "range": { "@timestamp": { "gte": "now-48h", "lte": "now" } } }
+      ]
     }
+  },
+  "aggs": {
+    "por_proceso": {
+      "terms": { "field": "process.name", "size": 60 },
+      "aggs": {
+        "por_padre":  { "terms": { "field": "process.parent.name", "size": 8 } },
+        "por_usuario": { "terms": { "field": "user.name", "size": 5 } },
+        "por_hora":   { "date_histogram": { "field": "@timestamp", "fixed_interval": "1h" } }
+      }
+    },
+    "top_padres": { "terms": { "field": "process.parent.name", "size": 40 } }
   }
-}
-```
+}```
 *Hallazgos:* Procesos como `svchost.exe` y `explorer.exe` dominan la telemetría. Se estableció que `powershell.exe` es lanzado normalmente por `CompatTelRunner.exe` (telemetría de Windows).
 
 ---
@@ -444,6 +453,10 @@ GET winlogbeat-*/_search
 Gracias al pipeline de Winlogbeat, ahora todas las búsquedas se realizan sobre el esquema ECS (campos como `process.name` en lugar de `winlog.event_data.Image`). Esto hace las queries portables y profesionales.
 
 ```kql
+# EID 10 - ProcessAccess sobre LSASS
+# OJO: TargetImage no tiene mapeo ECS en Winlogbeat -> se usa el campo crudo del proveedor
+event.code: "10" and winlog.event_data.TargetImage: *lsass*
+
 # Ver todos los eventos de creación de procesos (Sysmon EID 1)
 event.code: "1"
 
