@@ -358,7 +358,7 @@ setup.kibana:
 output.elasticsearch:
   hosts: ["https://192.168.200.87:9200"]
   username: "elastic"
-  password: "TU_PASSWORD_AQUI"
+  password: "{ES_PWD}"
   pipeline: "winlogbeat-%{[agent.version]}-routing"
   ssl:
     certificate_authorities: ["C:\\Program Files\\Winlogbeat\\winlogbeat-8.19.0-windows-x86_64\\http_ca.crt"]
