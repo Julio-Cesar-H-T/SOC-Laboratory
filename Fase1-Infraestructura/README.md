@@ -420,7 +420,8 @@ GET winlogbeat-*/_search
     },
     "top_padres": { "terms": { "field": "process.parent.name", "size": 40 } }
   }
-}```
+}
+```
 *Hallazgos:* Procesos como `svchost.exe` y `explorer.exe` dominan la telemetría. Se estableció que `powershell.exe` es lanzado normalmente por `CompatTelRunner.exe` (telemetría de Windows).
 
 ---
@@ -473,6 +474,7 @@ process.name: "cmd.exe" and process.parent.name: "explorer.exe"
 process.name: "netsh.exe"
 
 # Acceso a LSASS (Sysmon EID 10 - Credential Dumping)
+```
 event.code: "10" and winlog.event_data.TargetImage: *lsass*
 
 # PowerShell Script Block Logging (Event ID 4104)
