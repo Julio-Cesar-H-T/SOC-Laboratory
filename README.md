@@ -28,7 +28,7 @@ Este repositorio documenta el ciclo completo de *Detection Engineering* (Hipóte
 
 | Técnica | Táctica | Estado | Documentación |
 |---|---|---|---|
-| **T1059.001** (PowerShell) | Execution | ✅ **Validada** | [Ver Detección](detections/T1059.001-powershell-encoded/README.md) |
+| **T1059.001** (PowerShell) | Execution | ✅ **Validada** | [Ver Detección](Detections/T1059.001-powershell-encoded/README.md) |
 | **T1059.003** (cmd.exe) | Execution | ⏳ Pendiente | - |
 | **T1547.001** (Registry Run Keys) | Persistence | ⏳ Pendiente | - |
 
