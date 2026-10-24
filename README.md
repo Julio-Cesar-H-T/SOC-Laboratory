@@ -46,5 +46,4 @@ Este repositorio documenta el ciclo completo de *Detection Engineering* (Hipóte
 
 ## 👤 Autor
 *   **Julio Cesar Hernandez Tibrey / Vejetto89**
-*   **Institución:** Instituto Tecnológico de Las Américas (ITLA)
 *   **Perfil:** Estudiante de Ciberseguridad / Aspirante a SOC Analyst & Threat Hunter
