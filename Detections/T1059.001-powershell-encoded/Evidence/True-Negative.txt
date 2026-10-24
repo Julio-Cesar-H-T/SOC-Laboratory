@@ -1,0 +1,5 @@
+Prueba de Verdadero Negativo (Falso Positivo)
+Fecha: 23 de Octubre de 2026
+Comando ejecutado: powershell.exe -Command "Get-Date"
+Resultado: Wazuh (Rule 100010) y Elastic (Custom Detection) NO generaron alertas. 
+Conclusión: La regla discrimina correctamente los comandos legítimos de los ofuscados.
