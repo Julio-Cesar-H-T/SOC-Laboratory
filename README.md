@@ -18,7 +18,7 @@ El laboratorio se ejecuta sobre un hipervisor **KVM/QEMU** en un host Linux (Fed
 *   **VM3 (Endpoint):** Windows 10 Pro + Sysmon + Wazuh Agent + Winlogbeat (8.19).
 *   **VM4 (Atacante):** Kali Linux (Bajo demanda).
 
-📂 *Ver detalles técnicos del despliegue en [`Fase 1 - Infraestructura`](fase1-infraestructura/SOC-Lab-Fase1-Infraestructura.md).*
+📂 *Ver detalles técnicos del despliegue en [`Fase 1 - Infraestructura`](fase1-infraestructura/README.md).*
 
 ---
 
