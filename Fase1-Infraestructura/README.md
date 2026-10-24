@@ -1,7 +1,6 @@
 # SOC Home Lab - Fase 1: Infraestructura y Pipeline de Telemetría
 
 **Autor:** Julio Cesar Hernandez Tibrey / Vejetto89  
-**Institución:** ITLA (Instituto Tecnológico de Las Américas)  
 **Fecha:** Octubre 2026  
 **Estado:** Completado y validado
 
