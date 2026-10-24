@@ -474,8 +474,9 @@ process.name: "cmd.exe" and process.parent.name: "explorer.exe"
 process.name: "netsh.exe"
 
 # Acceso a LSASS (Sysmon EID 10 - Credential Dumping)
-```
+
 event.code: "10" and winlog.event_data.TargetImage: *lsass*
 
 # PowerShell Script Block Logging (Event ID 4104)
 event.code: "4104"
+```
