@@ -1,0 +1,11 @@
+<group name="windows,sysmon,">
+  <rule id="100010" level="12">
+    <if_group>sysmon_eid1_detections</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)powershell\.exe</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)-(enc|encodedcommand|ec)\s+[A-Za-z0-9+/=]{20,}</field>
+    <description>Custom Detection: PowerShell Encoded Command Execution (T1059.001)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+</group>
